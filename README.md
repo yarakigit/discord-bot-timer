@@ -27,7 +27,7 @@
     1. `Add secret` をクリック
     1. 再度、 `New repository secret` をクリック
     1. `Name` に `DEADLINE` を入力
-    1. `Value` に期日を入力 (下記のフォーマット)
+    1. `Value` に期日を入力 (下記のフォーマット、半角スペース、シングルクォーテーション)
 
     ~~~
     '''
