@@ -1,0 +1,56 @@
+name: 'discord_bot_timer'
+
+on:
+  schedule:
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+    #  push:
+    #    branches:
+    #      - main
+
+jobs:
+  ubuntu-test:
+    env:
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+      DEADLINE:  ${{ secrets.DEADLINE }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: 'Set current datetime as env variable'
+        env:
+          TZ: 'Asia/Tokyo'
+        run: |
+          echo "CURRENT_DATETIME=$(date +'%Y/%m/%d(%a) %H:%M:%S')" >> $GITHUB_ENV
+          #echo "CURRENT_DATETIME=$(date +'%Y/%m/%d(%a) %H:%M:%S')" 
+      - shell: bash
+        id: setup
+        run: |
+          sudo apt update
+          sudo apt autoremove -y
+          sudo apt install -y fonts-ipafont-gothic
+          sudo apt install -y python3
+          #sudo python3 -m pip install selenium
+          #sudo apt install -y chromium-chromedriver
+          sudo python3 -m pip install discord
+          sudo python3 -m pip install pandas
+          
+      - shell: bash
+        id: main
+        run: |
+          python3 main.py ${{ env.DISCORD_BOT_TOKEN }} ${{ env.DISCORD_CHANNEL_ID }} ${{env.DEADLINE}}
+
+      #- uses: sarisia/actions-status-discord@v1
+      #  if: always() && ${{ env.DISCORD_WEBHOOK }} != null
+      #  with:
+      #    webhook: ${{ env.DISCORD_WEBHOOK }}
+      #    title: 🦾 `${{ github.actor }}` - 健康管理システム 自動入力完了
+      #    username: 'Auto-HMS'
+      #    avatar_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'
+      #    image: 'https://pbs.twimg.com/profile_banners/1159383628951851008/1565318066/1080x360'
+      #    nocontext: true
+      #    noprefix: true
+      #    description: |
+      #      `${{ env.CURRENT_DATETIME }}` ([GitHub](https://github.com/k5-mot/auto-hms-action)) ([NU-HMS](https://hms.hc.nagasaki-u.ac.jp/))
