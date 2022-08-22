@@ -37,6 +37,6 @@ jobs:
           
       - name: 'run python'
         run: |
-        python main.py ${{ env.DISCORD_WEBHOOK }} ${{ env.DEADLINE }}
+          python main.py ${{ env.DISCORD_WEBHOOK }} ${{ env.DEADLINE }}
 
       
