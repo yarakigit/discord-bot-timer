@@ -4,9 +4,9 @@ on:
   schedule:
     - cron: '0 22 * * *'
   workflow_dispatch:
-  push:
-    branches:
-      - master
+  ###push:
+  ###  branches:
+  ###    - master
 jobs:
   main-discord:
     env:
