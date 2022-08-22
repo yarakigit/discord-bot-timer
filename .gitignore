@@ -1,0 +1,5 @@
+.venv
+Makefile
+.python-version
+script.sh
+.vscode

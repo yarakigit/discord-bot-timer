@@ -1,65 +1,28 @@
 import sys
 import datetime
-import discord
-from discord.ext import tasks
+from discord_webhook import DiscordWebhook, DiscordEmbed
 import pandas as pd
 import io
 
-
-# 自分のBotのアクセストークンに置き換えてください
-TOKEN = sys.argv[1]
-# チャンネルID
-CHANNEL_ID = int(sys.argv[2])
+# webhook
+WEBHOOK = sys.argv[1]
 # 締め切り時間
-tmp_df = pd.read_csv(io.StringIO(sys.argv[3]), header=None)
+tmp_df = pd.read_csv(io.StringIO(sys.argv[2]), header=None)
 TIME_DATA = tmp_df.iloc[:,0].apply(lambda x: pd.Series(x.split()))
 
-# 接続に必要なオブジェクトを生成
-client = discord.Client()
+webhook = DiscordWebhook(url=WEBHOOK)
 
-# 起動時に動作する処理
-@client.event
-async def on_ready():
-    # 起動したらターミナルにログイン通知が表示される
-    print('ログインしました')
-
-    #bot 起動時の処理
-    channel = client.get_channel(CHANNEL_ID)
+def main():
+    # 文字列生成
     send_list = send_string()
-    embed = discord.Embed(title="残り時間表示 BOT",description="by Github Actions",color=discord.Colour.orange())
+    embed = DiscordEmbed(title="残り時間表示 BOT",description="by Github Actions",color='ffa500')
+    
+    
     for row,list in enumerate(send_list):
         send_value = "期日 " + str(TIME_DATA.iat[row,1]) +"年"+ str(TIME_DATA.iat[row,2])+"月" + str(TIME_DATA.iat[row,3])+"日" + str(TIME_DATA.iat[row,4]) + "時"
-        embed.add_field(name=str(TIME_DATA.iat[row,0])+"まで後、"+list,value=send_value,inline=False) # フィールドを追加。
-    await channel.send(embed=embed)
-    exit(0)#終了
-# メッセージ受信時に動作する処理
-@client.event
-async def on_message(message):
-    # メッセージ送信者がBotだった場合は無視する
-    if message.author.bot:
-        return
-    # 「/timer」と発言したら「残り時間」が返る処理
-    if message.content == '/timer':
-        #発言したチャンネルのIDを取得
-        channel_id = message.channel.id
-        send_message = await message.channel.send("timer start")
-        #発現したメッセージのIDを取得
-        message_id= send_message.id
-        send_message_every.start(channel_id,message_id) #定期実行するメソッドの後ろに.start()をつける
-
-# 1秒間間隔で実行        
-@tasks.loop(seconds=1)
-async def send_message_every(channel_id,message_id):
-    # 上位関数で取得したチャンネルのIDを使う
-    channel = client.get_channel(channel_id)
-    msg= await channel.fetch_message(message_id)
-    send_list = send_string()
-    embed = discord.Embed(title="残り時間表示 BOT",description="by Github Actions",color=discord.Colour.orange())
-    for row,list in enumerate(send_list):
-        send_value = "期日 " + str(TIME_DATA.iat[row,1]) +"年"+ str(TIME_DATA.iat[row,2])+"月" + str(TIME_DATA.iat[row,3])+"日" + str(TIME_DATA.iat[row,4]) + "時"
-        embed.add_field(name=str(TIME_DATA.iat[row,0])+"まで後、"+list,value=send_value,inline=False) # フィールドを追加。
-    await msg.edit(embed=embed)
-        
+        embed.add_embed_field(name=str(TIME_DATA.iat[row,0])+"まで後、"+list,value=send_value,inline=False)
+    webhook.add_embed(embed)
+    response = webhook.execute()
 
 def cal_time(dead_time):
     dt_now = datetime.datetime.now() + datetime.timedelta(hours=9) #現在時刻取得(日本時間+9時間) 
@@ -79,5 +42,4 @@ def send_string():
         list.append(cal_time(dead_time))
     return list
 
-# Botの起動とDiscordサーバーへの接続
-client.run(TOKEN)
+main()
